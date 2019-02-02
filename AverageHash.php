@@ -3,7 +3,7 @@
 namespace app;
 
 
-class AverageHash implements AverageHashInterface
+class AverageHash implements AverageHashInterface, HashHelperInterface
 {
     private $inputImage;
     public $inputImageResource;
@@ -38,6 +38,11 @@ class AverageHash implements AverageHashInterface
         } else {
             throw new \Error("Cannot find image");
         }
+    }
+
+    public function setConfig()
+    {
+        // TODO: Implement setConfig() method.
     }
 
     public function resizeImage()
@@ -84,5 +89,10 @@ class AverageHash implements AverageHashInterface
     public function makeHash()
     {
         $this->hash = implode('', $this->bitChain);
+    }
+
+    public function getHashesDifference()
+    {
+        // TODO: Implement getHashDifference() method.
     }
 }
