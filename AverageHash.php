@@ -9,6 +9,9 @@ class AverageHash implements AverageHashInterface
     public $inputImageResource;
     public $outputImageResource;
     public $hash;
+    private $colorMap = [];
+    private $avgColor;
+    private $bitChain = [];
 
     public function __construct($inputImage)
     {
@@ -42,30 +45,44 @@ class AverageHash implements AverageHashInterface
         // get input image size
         list($width, $height) = getimagesize($this->inputImage);
 
-        if (imagecopyresized($this->outputImageResource, $this->inputImageResource, 0, 0, 0, 0, 32, 32, $width, $height)) {
-            imagejpeg($this->outputImageResource);
-        } else {
+        if (!imagecopyresized($this->outputImageResource, $this->inputImageResource, 0, 0, 0, 0, 32, 32, $width, $height)) {
             throw new \Error('Cannot resize image');
         }
     }
 
     public function imageToGray()
     {
-        // TODO: Implement imageToGray() method.
+        if (!imagecopymergegray($this->outputImageResource, $this->outputImageResource, 0, 0, 0, 0, 32, 32, 0)) {
+            throw new \Error('Cannot merge to gray');
+        }
     }
 
     public function getAverageColor()
     {
-        // TODO: Implement getAverageColor() method.
+        for ($i = 0; $i < 32; $i++) {
+            for ($j = 0; $j < 32; $j++) {
+                array_push($this->colorMap, imagecolorat($this->outputImageResource, $i, $j));
+            }
+        }
+
+        // get average value
+        $sum = array_reduce($this->colorMap, function ($currentSum, $currentItem) {
+            $currentSum += $currentItem;
+            return $currentSum;
+        }, 0);
+        $avg = $sum / count($this->colorMap);
+        $this->avgColor = $avg;
     }
 
     public function getBitChain()
     {
-        // TODO: Implement getBitChain() method.
+        $this->bitChain = array_map(function ($item) {
+            return $item > $this->avgColor ? 1 : 0;
+        }, $this->colorMap);
     }
 
     public function makeHash()
     {
-        // TODO: Implement makeHash() method.
+        $this->hash = implode('', $this->bitChain);
     }
 }
