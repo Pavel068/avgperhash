@@ -5,6 +5,7 @@ namespace app;
 
 class AverageHash implements AverageHashInterface, HashHelperInterface
 {
+    private $config;
     private $inputImage;
     public $inputImageResource;
     public $outputImageResource;
@@ -15,7 +16,11 @@ class AverageHash implements AverageHashInterface, HashHelperInterface
 
     public function __construct($inputImage)
     {
-        $this->outputImageResource = imagecreatetruecolor(32, 32);
+        $this->config = (object)[
+            'width' => 8,
+            'height' => 8,
+        ];
+        $this->outputImageResource = imagecreatetruecolor($this->config->width, $this->config->height);
         if (file_exists($inputImage)) {
             $this->inputImage = $inputImage;
 
@@ -40,9 +45,10 @@ class AverageHash implements AverageHashInterface, HashHelperInterface
         }
     }
 
-    public function setConfig()
+    public function setConfig($w, $h)
     {
-        // TODO: Implement setConfig() method.
+        $this->config->width = $w;
+        $this->config->height = $h;
     }
 
     public function resizeImage()
@@ -50,22 +56,22 @@ class AverageHash implements AverageHashInterface, HashHelperInterface
         // get input image size
         list($width, $height) = getimagesize($this->inputImage);
 
-        if (!imagecopyresized($this->outputImageResource, $this->inputImageResource, 0, 0, 0, 0, 32, 32, $width, $height)) {
+        if (!imagecopyresized($this->outputImageResource, $this->inputImageResource, 0, 0, 0, 0, $this->config->width, $this->config->height, $width, $height)) {
             throw new \Error('Cannot resize image');
         }
     }
 
     public function imageToGray()
     {
-        if (!imagecopymergegray($this->outputImageResource, $this->outputImageResource, 0, 0, 0, 0, 32, 32, 0)) {
+        if (!imagecopymergegray($this->outputImageResource, $this->outputImageResource, 0, 0, 0, 0, $this->config->width, $this->config->height, 0)) {
             throw new \Error('Cannot merge to gray');
         }
     }
 
     public function getAverageColor()
     {
-        for ($i = 0; $i < 32; $i++) {
-            for ($j = 0; $j < 32; $j++) {
+        for ($i = 0; $i < $this->config->width; $i++) {
+            for ($j = 0; $j < $this->config->height; $j++) {
                 array_push($this->colorMap, imagecolorat($this->outputImageResource, $i, $j));
             }
         }
