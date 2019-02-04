@@ -14,11 +14,11 @@ class AverageHash implements AverageHashInterface, HashHelperInterface
     private $avgColor;
     private $bitChain = [];
 
-    public function __construct($inputImage)
+    public function __construct($inputImage, $w, $h)
     {
         $this->config = (object)[
-            'width' => 8,
-            'height' => 8,
+            'width' => $w,
+            'height' => $h,
         ];
         $this->outputImageResource = imagecreatetruecolor($this->config->width, $this->config->height);
         if (file_exists($inputImage)) {
@@ -27,6 +27,9 @@ class AverageHash implements AverageHashInterface, HashHelperInterface
             // get extension
             $ext = explode('.', $inputImage);
             $ext = $ext[count($ext) - 1];
+            // fix jpeg
+            if ($ext == 'jpg')
+                $ext = 'jpeg';
 
             // get function name
             $funcName = 'imagecreatefrom' . $ext;
@@ -43,12 +46,6 @@ class AverageHash implements AverageHashInterface, HashHelperInterface
         } else {
             throw new \Error("Cannot find image");
         }
-    }
-
-    public function setConfig($w, $h)
-    {
-        $this->config->width = $w;
-        $this->config->height = $h;
     }
 
     public function resizeImage()
@@ -94,11 +91,28 @@ class AverageHash implements AverageHashInterface, HashHelperInterface
 
     public function makeHash()
     {
+        // make hash
+        $this->resizeImage();
+        $this->imageToGray();
+        $this->getAverageColor();
+        $this->getBitChain();
+        //
         $this->hash = implode('', $this->bitChain);
     }
 
-    public function getHashesDifference()
+    public static function getHashesDifference(AverageHash $hash1, AverageHash $hash2)
     {
-        // TODO: Implement getHashDifference() method.
+        $hammingDistance = 0;
+
+        if (strlen($hash1->hash) === strlen($hash2->hash)) {
+            for ($i = 0; $i < strlen($hash1->hash); $i++) {
+                if ($hash1->hash[$i] !== $hash2->hash[$i])
+                    $hammingDistance++;
+            }
+        } else {
+            throw new \Error('Hashes has not equal length');
+        }
+
+        return $hammingDistance;
     }
 }

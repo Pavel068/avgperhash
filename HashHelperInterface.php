@@ -4,7 +4,5 @@ namespace app;
 
 interface HashHelperInterface
 {
-    public function setConfig($w, $h);
-
-    public function getHashesDifference();
+    public static function getHashesDifference(AverageHash $hash1, AverageHash $hash2);
 }
